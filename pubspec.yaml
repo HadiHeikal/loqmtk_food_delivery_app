@@ -60,7 +60,11 @@ flutter:
     - assets/images/details/
     - assets/icons/
     - assets/images/logo/
+    - assets/images/
   fonts:
     - family: Gagalin
       fonts:
         - asset: assets/fonts/Gagalin-Regular.otf
+    - family: Luckiest Guy
+      fonts:
+        - asset: assets/fonts/LuckiestGuy-Regular.ttf
