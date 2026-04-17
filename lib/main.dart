@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:loqmtk_food_delivery_app/features/auth/views/login_view.dart';
-import 'package:loqmtk_food_delivery_app/features/auth/views/signup_view.dart';
-import 'package:loqmtk_food_delivery_app/splash.dart';
+import 'package:loqmtk_food_delivery_app/routes/app_routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Loqmtk Food Delivery App',
-      home: const SignUpView(),
+      home: const AppRoutes(),
     );
   }
 }
