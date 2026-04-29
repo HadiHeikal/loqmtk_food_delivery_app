@@ -7,6 +7,7 @@ import 'package:loqmtk_food_delivery_app/features/home/widgets/home_header.dart'
 import 'package:loqmtk_food_delivery_app/features/home/widgets/promo_code.dart';
 import 'package:loqmtk_food_delivery_app/features/home/widgets/search_field.dart';
 import 'package:loqmtk_food_delivery_app/features/home/widgets/section_title.dart';
+import 'package:loqmtk_food_delivery_app/features/product/views/product_details_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -101,7 +102,21 @@ class _HomeViewState extends State<HomeView> {
                 selectedCategoryIndex: _selectedCategoryIndex,
               ),
               Gap(22),
-              ..._popularItems.map((FoodItem item) => CategoryItem(item: item)),
+              ..._popularItems.map(
+                (FoodItem item) => GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ProductDetailsView();
+                        },
+                      ),
+                    );
+                  },
+                  child: CategoryItem(item: item),
+                ),
+              ),
             ],
           ),
         ),
