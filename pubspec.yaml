@@ -31,6 +31,7 @@ flutter:
     - assets/icons/
     - assets/images/logo/
     - assets/images/
+    - assets/images/cart/
   fonts:
     - family: Gagalin
       fonts:

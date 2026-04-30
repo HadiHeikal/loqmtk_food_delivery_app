@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:loqmtk_food_delivery_app/features/product/widgets/add_to_cart_section.dart';
+import 'package:loqmtk_food_delivery_app/shared/add_to_cart_section.dart';
 import 'package:loqmtk_food_delivery_app/features/product/widgets/custom_section.dart';
 import 'package:loqmtk_food_delivery_app/features/product/widgets/spicy_slider.dart';
 
@@ -57,7 +57,11 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
               ),
               Gap(30),
               // add to cart section
-              AddToCartSection(price: '170.5', onTap: () {}),
+              PriceActionSection(
+                price: '170.5',
+                onTap: () {},
+                buttonText: 'Add to Cart',
+              ),
             ],
           ),
         ),

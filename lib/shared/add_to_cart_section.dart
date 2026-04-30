@@ -3,10 +3,16 @@ import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
 import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 
-class AddToCartSection extends StatelessWidget {
-  const AddToCartSection({super.key, required this.price, required this.onTap});
+class PriceActionSection extends StatelessWidget {
+  const PriceActionSection({
+    super.key,
+    required this.price,
+    required this.onTap,
+    required this.buttonText,
+  });
   final String price;
   final Function() onTap;
+  final String buttonText;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -41,7 +47,7 @@ class AddToCartSection extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
               child: CustomText(
-                text: 'Add to Cart',
+                text: buttonText,
                 color: AppColors.whiteColor,
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
