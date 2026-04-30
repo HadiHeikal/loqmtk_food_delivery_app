@@ -68,7 +68,7 @@ class _SpicySliderState extends State<SpicySlider> {
               children: [
                 CustomText(text: '🥶'),
                 Gap(120),
-                CustomText(text: '🔥'),
+                CustomText(text: '🌶️'),
               ],
             ),
           ],

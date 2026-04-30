@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+import 'package:loqmtk_food_delivery_app/features/product/widgets/add_to_cart_section.dart';
+import 'package:loqmtk_food_delivery_app/features/product/widgets/custom_section.dart';
 import 'package:loqmtk_food_delivery_app/features/product/widgets/spicy_slider.dart';
 
 class ProductDetailsView extends StatefulWidget {
@@ -30,13 +33,31 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.symmetric(horizontal: 18.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SpicySlider(
                 initialValue: spicyLevel,
                 onChanged: _updateSpicyLevel,
               ),
+              // Toppings Section
+              CustomSection(
+                sectionTitle: 'Toppings',
+                itemText: 'Tomato',
+                itemImage: 'assets/images/details/toppings/tomato.png',
+                onAdd: () {},
+              ),
+              // Side options Section
+              CustomSection(
+                sectionTitle: 'Side options',
+                itemText: 'Coleslaw',
+                itemImage: 'assets/images/details/side_options/coleslaw.png',
+                onAdd: () {},
+              ),
+              Gap(30),
+              // add to cart section
+              AddToCartSection(price: '170.5', onTap: () {}),
             ],
           ),
         ),

@@ -26,6 +26,8 @@ flutter:
     - assets/images/splash/
     - assets/images/banner/
     - assets/images/details/
+    - assets/images/details/side_options/
+    - assets/images/details/toppings/
     - assets/icons/
     - assets/images/logo/
     - assets/images/
@@ -36,3 +38,6 @@ flutter:
     - family: Luckiest Guy
       fonts:
         - asset: assets/fonts/LuckiestGuy-Regular.ttf
+    - family: ReemKufi
+      fonts:
+        - asset: assets/fonts/ReemKufi-Regular.ttf
