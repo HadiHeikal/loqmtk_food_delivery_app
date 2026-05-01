@@ -10,6 +10,34 @@ class CartView extends StatefulWidget {
 }
 
 class _CartViewState extends State<CartView> {
+  List<int> _quantities = [];
+  final itemCount = 6;
+  void _incrementQuantity(int index) {
+    setState(() {
+      _quantities[index]++;
+    });
+  }
+
+  void _decrementQuantity(int index) {
+    setState(() {
+      if (_quantities[index] > 1) {
+        _quantities[index]--;
+      }
+    });
+  }
+
+  void _removeItem(int index) {
+    setState(() {
+      _quantities[index] = 0;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _quantities = List<int>.generate(itemCount, (index) => 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -28,10 +56,10 @@ class _CartViewState extends State<CartView> {
                           itemName: 'Hamburger',
                           itemDescription: 'Veggie Burger',
                           itemImage: 'assets/images/cart/burger.png',
-                          onPlus: () {},
-                          onMinus: () {},
-                          onRemoveItem: () {},
-                          itemQuantity: 0,
+                          onPlus: () => _incrementQuantity(index),
+                          onMinus: () => _decrementQuantity(index),
+                          onRemoveItem: () => _removeItem(index),
+                          itemQuantity: _quantities[index],
                         ),
                       );
                     }),
