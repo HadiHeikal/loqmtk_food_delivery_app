@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/features/cart/widgets/cart_item.dart';
+import 'package:loqmtk_food_delivery_app/features/checkout/views/checkout_view.dart';
 import 'package:loqmtk_food_delivery_app/shared/price_action_section.dart';
 
 class CartView extends StatefulWidget {
@@ -69,7 +70,12 @@ class _CartViewState extends State<CartView> {
               Gap(3),
               PriceActionSection(
                 price: '150',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CheckoutView()),
+                  );
+                },
                 buttonText: 'Check Out',
               ),
             ],
