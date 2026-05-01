@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:loqmtk_food_delivery_app/shared/add_to_cart_section.dart';
+import 'package:loqmtk_food_delivery_app/shared/price_action_section.dart';
 import 'package:loqmtk_food_delivery_app/features/product/widgets/custom_section.dart';
 import 'package:loqmtk_food_delivery_app/features/product/widgets/spicy_slider.dart';
 

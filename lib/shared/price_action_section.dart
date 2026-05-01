@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
 import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
+import 'package:loqmtk_food_delivery_app/shared/price_action_button.dart';
 
 class PriceActionSection extends StatelessWidget {
   const PriceActionSection({
@@ -37,24 +38,8 @@ class PriceActionSection extends StatelessWidget {
             ),
           ],
         ),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
-              child: CustomText(
-                text: buttonText,
-                color: AppColors.whiteColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
+        // custom button widget
+        PriceActionButton(buttonText: buttonText, onTap: onTap),
       ],
     );
   }

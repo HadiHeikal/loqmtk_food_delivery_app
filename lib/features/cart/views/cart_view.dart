@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/features/cart/widgets/cart_item.dart';
-import 'package:loqmtk_food_delivery_app/shared/add_to_cart_section.dart';
+import 'package:loqmtk_food_delivery_app/shared/price_action_section.dart';
 
 class CartView extends StatefulWidget {
   const CartView({super.key});
