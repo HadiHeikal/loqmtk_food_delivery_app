@@ -33,16 +33,19 @@ Follow these steps to get the project up and running on your local machine.
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/yourusername/loqmtk_food_delivery_app.git
    ```
 
 2. **Navigate to the project directory:**
+
    ```bash
    cd loqmtk_food_delivery_app
    ```
 
 3. **Install dependencies:**
+
    ```bash
    flutter pub get
    ```
@@ -67,11 +70,9 @@ lib/
 
 ## 📸 Screenshots
 
-| Home | Details | Cart | Checkout |
-| :---: | :---: | :---: | :---: |
+|                   Home                   |                 Details                  |                   Cart                   |                 Checkout                 |
+| :--------------------------------------: | :--------------------------------------: | :--------------------------------------: | :--------------------------------------: |
 | <img src="placeholder.png" width="200"/> | <img src="placeholder.png" width="200"/> | <img src="placeholder.png" width="200"/> | <img src="placeholder.png" width="200"/> |
-
-*(Note: Replace `placeholder.png` with actual screenshot paths)*
 
 ## 🤝 Contributing
 
