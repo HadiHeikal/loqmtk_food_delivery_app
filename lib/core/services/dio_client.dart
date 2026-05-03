@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_strings.dart';
+import 'package:loqmtk_food_delivery_app/core/utils/pref_helper.dart';
 
 class DioClient {
   final Dio _dio = Dio(
@@ -12,10 +13,10 @@ class DioClient {
   DioClient() {
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // final token = PrefHelper.getToken();
-          final token = "hadi-2628262";
-          // ignore: unnecessary_null_comparison
+        onRequest: (options, handler) async {
+          // Get token from SharedPreferences
+          final token = await PrefHelper.getToken();
+          // Add token to request headers if it exists
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -25,7 +26,6 @@ class DioClient {
       ),
     );
   }
-
   Dio get dio => _dio;
   /*
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
