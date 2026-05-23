@@ -11,6 +11,7 @@ class DioClient {
   );
 
   DioClient() {
+    // interceptors to add token to requests
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -20,28 +21,11 @@ class DioClient {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-
+          // Continue with the request
           return handler.next(options);
         },
       ),
     );
   }
   Dio get dio => _dio;
-  /*
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    return await _dio.get(path, queryParameters: queryParameters);
-  }
-
-  Future<Response> post(String path, {Map<String, dynamic>? data}) async {
-    return await _dio.post(path, data: data);
-  }
-
-  Future<Response> put(String path, {Map<String, dynamic>? data}) async {
-    return await _dio.put(path, data: data);
-  }
-
-  Future<Response> delete(String path) async {
-    return await _dio.delete(path);
-  }
-  */
 }

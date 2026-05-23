@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
+import 'package:loqmtk_food_delivery_app/core/services/api_error.dart';
+import 'package:loqmtk_food_delivery_app/features/auth/data/auth_repo.dart';
 import 'package:loqmtk_food_delivery_app/features/auth/widgets/custom_auth_button.dart';
 import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 import 'package:loqmtk_food_delivery_app/shared/custom_textform_field.dart';
@@ -16,6 +18,63 @@ class _LoginViewState extends State<LoginView> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthRepository _authRepository = AuthRepository();
+
+  // variable to track loading state
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    try {
+      final user = await _authRepository.login(email, password);
+
+      if (user != null && mounted) {
+        Navigator.pushReplacementNamed(context, '/appRoutes');
+      }
+    } catch (e) {
+      String? errorMessage;
+      if (e is ApiError) {
+        errorMessage = e.message;
+      }
+
+      if (mounted) {
+        // Show error message in a SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: CustomText(
+                text: errorMessage ?? 'An unexpected error occurred.',
+                color: AppColors.whiteColor,
+              ),
+            ),
+            backgroundColor: AppColors.redColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,66 +85,57 @@ class _LoginViewState extends State<LoginView> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Form(
-            key: _formKey, // Correctly assign _formKey to the Form widget
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Gap(30),
-                const CustomText(
-                  text: 'LOQMTK',
-                  fontSize: 72,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Gagalin',
-                ),
-                const CustomText(text: 'Welcome Back to your favorite app'),
-                const Gap(30),
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Gap(60),
+                  const CustomText(
+                    text: 'LOQMTK',
+                    fontSize: 72,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Gagalin',
+                  ),
+                  const CustomText(text: 'Welcome Back to your favorite app'),
+                  const Gap(50),
 
-                const Gap(30),
-                // Email field
-                CustomTextformField(
-                  controller: _emailController,
-                  hintText: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.none,
-                  isPassword: false,
-                ),
-                const Gap(20),
-                // Password field
-                CustomTextformField(
-                  controller: _passwordController,
-                  hintText: 'Password',
-                  keyboardType: TextInputType.text,
-                  textInputAction: TextInputAction.done,
-                  autofocus: false,
-                  textCapitalization: TextCapitalization.none,
-                  isPassword: true,
-                ),
-                const Gap(30),
-                // Login button
-                CustomAuthButton(
-                  onPressed: () {
-                    // Handle login logic here
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Padding(
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: CustomText(
-                              text: 'Logging in...',
-                              color: AppColors.blackColor,
-                            ),
-                          ),
-                          backgroundColor: AppColors.secondaryColor,
+                  // Email field
+                  CustomTextformField(
+                    controller: _emailController,
+                    hintText: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.none,
+                    isPassword: false,
+                  ),
+                  const Gap(20),
+
+                  // Password field
+                  CustomTextformField(
+                    controller: _passwordController,
+                    hintText: 'Password',
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.done,
+                    autofocus: false,
+                    textCapitalization: TextCapitalization.none,
+                    isPassword: true,
+                  ),
+                  const Gap(40),
+
+                  // Login button
+                  _isLoading
+                      ? const CircularProgressIndicator(
+                          color: AppColors.secondaryColor,
+                        )
+                      : CustomAuthButton(
+                          onPressed: _handleLogin,
+                          text: 'Login',
                         ),
-                      );
-                    }
-                  },
-                  text: 'Login',
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
