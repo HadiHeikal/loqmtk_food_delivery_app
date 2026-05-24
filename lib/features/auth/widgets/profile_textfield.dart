@@ -7,12 +7,14 @@ class ProfileTextField extends StatelessWidget {
     required this.controller,
     this.isPassword = false,
     this.readOnly = true,
+    this.keyboardType,
   });
 
   final String label;
   final TextEditingController controller;
   final bool isPassword;
   final bool readOnly;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {

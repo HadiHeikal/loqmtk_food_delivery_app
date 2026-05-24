@@ -37,7 +37,7 @@ class _LoginViewState extends State<LoginView> {
       final user = await _authRepository.login(email, password);
 
       if (user != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/appRoutes');
       }
     } catch (e) {
       String? errorMessage;
