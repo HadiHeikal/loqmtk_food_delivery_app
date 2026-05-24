@@ -48,9 +48,69 @@ class AuthRepository {
       rethrow;
     }
   }
+
   // get profile
+  Future<UserModel?> getProfile() async {
+    try {
+      final response = await apiService.get('/profile');
+      return UserModel.fromJson(response['data']);
+    } on DioException catch (e) {
+      throw ApiException.handleEror(e);
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   // edit profile
+  Future<UserModel?> editProfile({
+    required String name,
+    required String email,
+    String? imagePath,
+    String? address,
+    String? visa,
+  }) async {
+    try {
+      // Construct FormData with conditional fields based on provided parameters
+      final formData = FormData.fromMap({
+        'name': name,
+        'email': email,
+
+        // Using map spreading with a null-aware expression to conditionally add the file
+        ...?imagePath?.isNotEmpty == true
+            ? {
+                'image': await MultipartFile.fromFile(
+                  imagePath!,
+                  filename: imagePath.split('/').last,
+                ),
+              }
+            : null,
+
+        // Standard null-aware mapping technique for optional text parameters
+        ...?address != null ? {'address': address} : null,
+        ...?visa != null ? {'Visa': visa} : null,
+      });
+
+      // Send the dynamic form data directly to the server
+      final response = await apiService.put('/update-profile', data: formData);
+
+      // Parse the response data into the UserModel
+      return UserModel.fromJson(response['data']);
+    } on DioException catch (e) {
+      throw ApiException.handleEror(e);
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   // logout
+  Future<void> logout() async {
+    try {
+      await apiService.post('/logout');
+      await PrefHelper.removeToken();
+    } on DioException catch (e) {
+      throw ApiException.handleEror(e);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
