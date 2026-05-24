@@ -37,7 +37,7 @@ class _LoginViewState extends State<LoginView> {
       final user = await _authRepository.login(email, password);
 
       if (user != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/appRoutes');
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       String? errorMessage;
@@ -134,6 +134,24 @@ class _LoginViewState extends State<LoginView> {
                           onPressed: _handleLogin,
                           text: 'Login',
                         ),
+                  const Gap(20),
+                  // Navigate to Signup
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CustomText(text: "Don't have an account?"),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/register');
+                        },
+                        child: const CustomText(
+                          text: 'Sign Up',
+                          color: AppColors.secondaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
