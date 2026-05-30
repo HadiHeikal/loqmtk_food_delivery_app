@@ -1,8 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
+import 'package:loqmtk_food_delivery_app/features/auth/data/auth_repo.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  AuthRepository authRepository = AuthRepository();
+
+  // check login status
+  Future<void> checkLoginStatus() async {
+    try {
+      final user = await authRepository.autoLogin();
+      if (user != null && mounted) {
+        // navigate to home screen
+        Navigator.pushReplacementNamed(context, '/appRoutes');
+      } else if (authRepository.isGuest && mounted) {
+        // navigate to home screen as guest
+        Navigator.pushReplacementNamed(context, '/appRoutes');
+      } else {
+        // navigate to login screen if not logged in
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
+    } catch (e) {
+      // navigate to login screen on error
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), checkLoginStatus);
+  }
 
   @override
   Widget build(BuildContext context) {

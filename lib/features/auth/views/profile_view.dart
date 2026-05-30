@@ -35,6 +35,13 @@ class _ProfileViewState extends State<ProfileView> {
 
   final AuthRepository _authRepository = AuthRepository();
   UserModel? userModel;
+  bool isGuest = false;
+  // auto login method to check if user is already logged in and get profile data
+  Future<void> autoLogin() async {
+    final user = await _authRepository.autoLogin();
+    setState(() => isGuest = _authRepository.isGuest);
+    if (user != null) setState(() => userModel = user);
+  }
 
   /// Fetches the user profile data from the secure API repository architecture
   Future<void> _loadUserProfile() async {
@@ -44,10 +51,12 @@ class _ProfileViewState extends State<ProfileView> {
         setState(() {
           userModel = user;
           // Synchronize text controllers with updated backend model datasets
-          nameController.text = user.name;
-          emailController.text = user.email;
-          addressController.text = user.address ?? '';
-          visaController.text = user.visa ?? '';
+          nameController.text = user.name.toString();
+          emailController.text = user.email.toString();
+          addressController.text = user.address != null
+              ? user.address.toString()
+              : '';
+          visaController.text = user.visa != null ? user.visa.toString() : '';
         });
       }
     } catch (e) {
@@ -59,12 +68,26 @@ class _ProfileViewState extends State<ProfileView> {
     }
   }
 
+  /// Handles Android Lifecycle crash recovery for ImagePicker
+  Future<void> _checkLostData() async {
+    final ImagePicker picker = ImagePicker();
+    final LostDataResponse response = await picker.retrieveLostData();
+    if (response.isEmpty) return;
+
+    if (response.file != null) {
+      setState(() {
+        selectedImagePath = response.file!.path;
+      });
+    }
+  }
+
   /// Triggers the mobile native system gallery infrastructure using ImagePicker
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     try {
       final XFile? pickedImage = await picker.pickImage(
         source: ImageSource.gallery,
+        imageQuality: 80, // اضغط الصورة لسرعة الرفع وتقليل استهلاك الباقة
       );
       if (pickedImage != null) {
         setState(() {
@@ -72,7 +95,6 @@ class _ProfileViewState extends State<ProfileView> {
         });
       }
     } on PlatformException catch (e) {
-      // Safely intercepts hung instances, already_active errors, or system channel rejections
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gallery connection error: ${e.message}')),
@@ -89,27 +111,26 @@ class _ProfileViewState extends State<ProfileView> {
 
   /// Packages form values into Multipart FormData chunks and updates the server database
   Future<void> _updateProfile() async {
-    if (_isLoading) return; // Prevent double taps or execution overlap
+    if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final user = await _authRepository.editProfile(
+      final user = await _authRepository.updateProfile(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         address: addressController.text.trim(),
         imagePath: selectedImagePath,
-        visa: visaController.text.trim().toString(),
+        visa: visaController.text.trim(),
       );
 
       if (user != null) {
         setState(() {
           userModel = user;
-          isEditing =
-              false; // Gracefully exit edit mode upon validation success
-          selectedImagePath = null; // Flush local file preview cache pipeline
+          isEditing = false;
+          selectedImagePath = null;
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -126,8 +147,7 @@ class _ProfileViewState extends State<ProfileView> {
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading =
-              false; // Always discharge loading lock state inside finalization phase
+          _isLoading = false;
         });
       }
     }
@@ -135,10 +155,18 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
+    autoLogin();
     super.initState();
     _loadUserProfile();
-    // Native lifecycle cleanup: resolves and flushes any hung image picker channel intents on Android
-    ImagePicker().retrieveLostData();
+    _checkLostData();
+  }
+
+  // log out method
+  void _logout() async {
+    await _authRepository.logout();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
@@ -164,351 +192,367 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryColor,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadUserProfile,
-          color: AppColors.primaryColor,
-          backgroundColor: AppColors.whiteColor,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Container(
-                      padding: const EdgeInsets.all(24.0),
-                      decoration: BoxDecoration(color: AppColors.primaryColor),
-                      child: Skeletonizer(
-                        enabled: userModel == null,
-                        child: Column(
-                          children: [
-                            // --------------------------- Navigation Action Row ---------------------------
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_back,
-                                    color: Colors.white,
+    if (isGuest) {
+      return Scaffold(
+        backgroundColor: AppColors.primaryColor,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _loadUserProfile,
+            color: AppColors.primaryColor,
+            backgroundColor: AppColors.whiteColor,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Container(
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
+                        ),
+                        child: Skeletonizer(
+                          enabled: userModel == null,
+                          child: Column(
+                            children: [
+                              // --------------------------- Navigation Action Row ---------------------------
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => Navigator.pop(context),
                                   ),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.settings,
-                                    color: Colors.white,
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.settings,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {},
                                   ),
-                                  onPressed: () {},
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
 
-                            // --------------------------- Profile Picture (Interactive Engine) ---------------------------
-                            MouseRegion(
-                              cursor: (isEditing && !_isLoading)
-                                  ? SystemMouseCursors.click
-                                  : SystemMouseCursors.basic,
-                              onEnter: (_) => setState(
-                                () => _isHovered = isEditing,
-                              ), // Limit hover visual triggers exclusively to edit mode
-                              onExit: (_) => setState(() => _isHovered = false),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(24),
-                                onTap: (isEditing && !_isLoading)
-                                    ? _pickImage
-                                    : null, // Disable interactive selection unless edit mode is true
-                                child: SizedBox(
-                                  width: 110,
-                                  height: 110,
-                                  child: Stack(
-                                    children: [
-                                      // Base Layer Component: Profile Avatar Rendering Structure
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            24,
-                                          ),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.white.withValues(
-                                                alpha: .3,
-                                              ),
-                                              blurRadius: 20,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                          image: DecorationImage(
-                                            image: _getProfileImage(),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-
-                                      // Secondary Layer Component: Animated Indicator Overlay
-                                      AnimatedOpacity(
-                                        opacity: _isHovered ? 1.0 : 0.0,
-                                        duration: const Duration(
-                                          milliseconds: 200,
-                                        ),
-                                        child: Container(
+                              // --------------------------- Profile Picture (Interactive Engine) ---------------------------
+                              MouseRegion(
+                                cursor: (isEditing && !_isLoading)
+                                    ? SystemMouseCursors.click
+                                    : SystemMouseCursors.basic,
+                                onEnter: (_) =>
+                                    setState(() => _isHovered = isEditing),
+                                onExit: (_) =>
+                                    setState(() => _isHovered = false),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(24),
+                                  onTap: (isEditing && !_isLoading)
+                                      ? _pickImage
+                                      : null,
+                                  child: SizedBox(
+                                    width: 110,
+                                    height: 110,
+                                    child: Stack(
+                                      children: [
+                                        Container(
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
                                               24,
                                             ),
-                                            color: Colors.black.withValues(
-                                              alpha: .5,
-                                            ),
-                                          ),
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.edit_rounded,
+                                            border: Border.all(
                                               color: Colors.white,
-                                              size: 28,
+                                              width: 2,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.white.withValues(
+                                                  alpha: .3,
+                                                ),
+                                                blurRadius: 20,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                            image: DecorationImage(
+                                              image: _getProfileImage(),
+                                              fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        AnimatedOpacity(
+                                          opacity: _isHovered ? 1.0 : 0.0,
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(24),
+                                              color: Colors.black.withValues(
+                                                alpha: .5,
+                                              ),
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.edit_rounded,
+                                                color: Colors.white,
+                                                size: 28,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 32),
+                              const SizedBox(height: 32),
 
-                            // --------------------------- Form Fields Text Input Layout ---------------------------
-                            ProfileTextField(
-                              label: 'Name',
-                              controller: nameController,
-                              readOnly:
-                                  !isEditing, // Input lock condition: editable exclusively when isEditing is active
-                            ),
-                            const SizedBox(height: 16),
-                            ProfileTextField(
-                              label: 'Email',
-                              controller: emailController,
-                              readOnly: !isEditing,
-                            ),
-                            const SizedBox(height: 16),
-                            ProfileTextField(
-                              label: 'Delivery address',
-                              controller: addressController,
-                              readOnly: !isEditing,
-                            ),
-                            const SizedBox(height: 16),
-                            ProfileTextField(
-                              label: 'Password',
-                              controller: passwordController,
-                              isPassword: true,
-                              readOnly: !isEditing,
-                            ),
-                            const SizedBox(height: 24),
+                              // --------------------------- Form Fields Text Input Layout ---------------------------
+                              ProfileTextField(
+                                label: 'Name',
+                                controller: nameController,
+                                readOnly: !isEditing,
+                              ),
+                              const SizedBox(height: 16),
+                              ProfileTextField(
+                                label: 'Email',
+                                controller: emailController,
+                                readOnly: !isEditing,
+                              ),
+                              const SizedBox(height: 16),
+                              ProfileTextField(
+                                label: 'Delivery address',
+                                controller: addressController,
+                                readOnly: !isEditing,
+                              ),
+                              const SizedBox(height: 16),
+                              ProfileTextField(
+                                label: 'Password',
+                                controller: passwordController,
+                                isPassword: true,
+                                readOnly: !isEditing,
+                              ),
+                              const SizedBox(height: 24),
 
-                            const Divider(color: Colors.white54, thickness: 1),
-                            const SizedBox(height: 24),
+                              const Divider(
+                                color: Colors.white54,
+                                thickness: 1,
+                              ),
+                              const SizedBox(height: 24),
 
-                            // --------------------------- Visa Dynamic Validation Frame ---------------------------
-                            userModel?.visa != null &&
-                                    userModel!.visa!.isNotEmpty &&
-                                    !isEditing
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Image.asset(
-                                          'assets/icons/profileVisa.png',
-                                          width: 60,
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Debit card',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                              Text(
-                                                userModel?.visa ??
-                                                    '**** **** **** 0505',
-                                                style: const TextStyle(
-                                                  color: Colors.black54,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        CustomText(
-                                          text: 'Default',
-                                          color: AppColors.blackColor,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : ProfileTextField(
-                                    isPassword: false,
-                                    readOnly: !isEditing,
-                                    keyboardType: TextInputType.number,
-                                    label: 'Add Visa Card Number',
-                                    controller: visaController,
-                                  ),
-                            const Spacer(),
-
-                            // --------------------------- Bottom Operational Control Row ---------------------------
-                            Row(
-                              children: [
-                                // Dynamic Primary Trigger Button (Handles Form Toggling and API Syncing)
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading
-                                        ? null // Block interaction while loading indicator is processing requests
-                                        : () {
-                                            if (isEditing) {
-                                              _updateProfile(); // Submit structural modifications to core DB
-                                            } else {
-                                              setState(() {
-                                                isEditing =
-                                                    true; // Transition structural layout context into active edit mode
-                                              });
-                                            }
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white,
+                              // --------------------------- Visa Dynamic Validation Frame ---------------------------
+                              userModel?.visa != null &&
+                                      userModel!.visa!.isNotEmpty &&
+                                      !isEditing
+                                  ? Container(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
+                                        horizontal: 16,
+                                        vertical: 12,
                                       ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                    Color(0xFF212121),
-                                                  ),
-                                            ),
-                                          )
-                                        : isEditing
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Save Profile',
-                                                style: TextStyle(
-                                                  color: AppColors.primaryColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                Icons.check,
-                                                color: AppColors.primaryColor,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          )
-                                        : Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                'Edit Profile',
-                                                style: TextStyle(
-                                                  color: AppColors.primaryColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Icon(
-                                                Icons.edit_square,
-                                                color: AppColors.primaryColor,
-                                                size: 20,
-                                              ),
-                                            ],
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-
-                                // Secondary Action Control Button (Log out Anchor Framework)
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: _isLoading
-                                        ? null
-                                        : () {}, // Guarded against state updates
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(
+                                      decoration: BoxDecoration(
                                         color: Colors.white,
-                                        width: 1.5,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(16),
                                       ),
-                                    ),
-                                    child: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Log out',
-                                          style: TextStyle(
-                                            color: Colors.white,
+                                      child: Row(
+                                        children: [
+                                          Image.asset(
+                                            'assets/icons/profileVisa.png',
+                                            width: 60,
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Debit card',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  userModel?.visa ??
+                                                      '**** **** **** 0505',
+                                                  style: const TextStyle(
+                                                    color: Colors.black54,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          CustomText(
+                                            text: 'Default',
+                                            color: AppColors.blackColor,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                           ),
+                                        ],
+                                      ),
+                                    )
+                                  : ProfileTextField(
+                                      isPassword: false,
+                                      readOnly: !isEditing,
+                                      keyboardType: TextInputType.number,
+                                      label: 'Add Visa Card Number',
+                                      controller: visaController,
+                                    ),
+                              const SizedBox(height: 40),
+
+                              // --------------------------- Bottom Operational Control Row ---------------------------
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading
+                                          ? null
+                                          : () {
+                                              if (isEditing) {
+                                                _updateProfile();
+                                              } else {
+                                                setState(() {
+                                                  isEditing = true;
+                                                });
+                                              }
+                                            },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
                                         ),
-                                        SizedBox(width: 8),
-                                        Icon(
-                                          Icons.logout,
-                                          color: Colors.white,
-                                          size: 20,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
-                                      ],
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Color(0xFF212121)),
+                                              ),
+                                            )
+                                          : isEditing
+                                          ? Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Save Profile',
+                                                  style: TextStyle(
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.check,
+                                                  color: AppColors.primaryColor,
+                                                  size: 20,
+                                                ),
+                                              ],
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'Edit Profile',
+                                                  style: TextStyle(
+                                                    color:
+                                                        AppColors.primaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.edit_square,
+                                                  color: AppColors.primaryColor,
+                                                  size: 20,
+                                                ),
+                                              ],
+                                            ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: _isLoading ? null : _logout,
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(
+                                          color: Colors.white,
+                                          width: 1.5,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Log out',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Icon(
+                                            Icons.logout,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Scaffold(
+        backgroundColor: AppColors.primaryColor,
+        body: const Center(
+          child: CustomText(
+            text: 'Guest users cannot access profile features.',
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
   }
 }

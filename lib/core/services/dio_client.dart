@@ -17,8 +17,8 @@ class DioClient {
         onRequest: (options, handler) async {
           // Get token from SharedPreferences
           final token = await PrefHelper.getToken();
-          // Add token to request headers if it exists
-          if (token != null && token.isNotEmpty) {
+          // Add token to request headers if it exists and is not empty or 'Guest'
+          if (token != null && token.isNotEmpty && token != 'Guest') {
             options.headers['Authorization'] = 'Bearer $token';
           }
           // Continue with the request
