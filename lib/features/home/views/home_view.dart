@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:loqmtk_food_delivery_app/features/home/models/food_item_model.dart';
+import 'package:loqmtk_food_delivery_app/features/home/data/home_repo.dart';
+import 'package:loqmtk_food_delivery_app/features/home/data/item_model.dart';
 import 'package:loqmtk_food_delivery_app/features/home/widgets/category_item.dart';
 import 'package:loqmtk_food_delivery_app/features/home/widgets/food_categories.dart';
 import 'package:loqmtk_food_delivery_app/features/home/widgets/home_header.dart';
@@ -27,56 +28,32 @@ class _HomeViewState extends State<HomeView> {
 
   final int _selectedCategoryIndex = 0;
   // list of popular items
-  final List<FoodItem> _popularItems = <FoodItem>[
-    const FoodItem(
-      title: 'Classic Burger',
-      subtitle: 'Cheese, onion, special sauce',
-      price: 12.50,
-      imageUrl:
-          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200',
-      rating: 4.8,
-    ),
-    const FoodItem(
-      title: 'Pepperoni Pizza',
-      subtitle: 'Mozzarella, tomato sauce',
-      price: 15.00,
-      imageUrl:
-          'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200',
-      rating: 4.7,
-    ),
-    const FoodItem(
-      title: 'Salmon Sushi',
-      subtitle: 'Fresh salmon and rice roll',
-      price: 18.90,
-      imageUrl:
-          'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1200',
-      rating: 4.9,
-    ),
-    const FoodItem(
-      title: 'Classic Burger',
-      subtitle: 'Cheese, onion, special sauce',
-      price: 12.50,
-      imageUrl:
-          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200',
-      rating: 4.8,
-    ),
-    const FoodItem(
-      title: 'Pepperoni Pizza',
-      subtitle: 'Mozzarella, tomato sauce',
-      price: 15.00,
-      imageUrl:
-          'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200',
-      rating: 4.7,
-    ),
-    const FoodItem(
-      title: 'Salmon Sushi',
-      subtitle: 'Fresh salmon and rice roll',
-      price: 18.90,
-      imageUrl:
-          'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1200',
-      rating: 4.9,
-    ),
-  ];
+
+  List<ItemModel> _popularItems = [];
+  final HomeRepo _homeRepo = HomeRepo();
+  Future<void> _getPopularItems() async {
+    try {
+      List<ItemModel> items = await _homeRepo.getProducts();
+      setState(() {
+        _popularItems = items;
+        debugPrint('Fetched ${items.length} items');
+        debugPrint(
+          'First item: ${items.isNotEmpty ? items[0].name : 'No items'}',
+        );
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+      setState(() {
+        _popularItems = [];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getPopularItems();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +80,7 @@ class _HomeViewState extends State<HomeView> {
               ),
               Gap(22),
               ..._popularItems.map(
-                (FoodItem item) => GestureDetector(
+                (ItemModel item) => GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
