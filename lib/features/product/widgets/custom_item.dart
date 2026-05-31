@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
+import 'package:loqmtk_food_delivery_app/features/product/data/product_model.dart';
 import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 
 class CustomItem extends StatelessWidget {
   const CustomItem({
     super.key,
-    required this.text,
-    required this.imageUrl,
+    required this.productModel,
     required this.onAdd,
   });
-  final String text;
-  final String imageUrl;
+  final ProductModel? productModel;
   final Function() onAdd;
 
   @override
@@ -42,7 +41,7 @@ class CustomItem extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: Image.asset(imageUrl),
+                child: Image.network(productModel?.image ?? ''),
               ),
             ),
           ),
@@ -53,7 +52,11 @@ class CustomItem extends StatelessWidget {
           left: 15,
           child: Row(
             children: [
-              CustomText(text: text, fontSize: 16, fontWeight: FontWeight.bold),
+              CustomText(
+                text: productModel?.name ?? '',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
               Spacer(),
               Container(
                 height: 25,

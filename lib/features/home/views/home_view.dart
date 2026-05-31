@@ -36,13 +36,8 @@ class _HomeViewState extends State<HomeView> {
       List<ItemModel> items = await _homeRepo.getProducts();
       setState(() {
         _popularItems = items;
-        debugPrint('Fetched ${items.length} items');
-        debugPrint(
-          'First item: ${items.isNotEmpty ? items[0].name : 'No items'}',
-        );
       });
     } catch (e) {
-      debugPrint(e.toString());
       setState(() {
         _popularItems = [];
       });
