@@ -5,10 +5,12 @@ import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 
 class SpicySlider extends StatefulWidget {
   final double initialValue;
+  final String productImage;
   final ValueChanged<double> onChanged;
   const SpicySlider({
     super.key,
     required this.initialValue,
+    required this.productImage,
     required this.onChanged,
   });
 
@@ -24,14 +26,16 @@ class _SpicySliderState extends State<SpicySlider> {
       children: [
         Padding(
           padding: const EdgeInsets.only(right: 14.0),
-          child: Image.asset(
-            'assets/images/details/burger_items.png',
-            height: 240,
+          child: Image.network(
+            widget.productImage,
+            height: 150,
+            width: 150,
+            fit: BoxFit.fill,
           ),
         ),
         Column(
           children: [
-            Gap(50),
+            Gap(20),
             Row(
               children: [
                 CustomText(

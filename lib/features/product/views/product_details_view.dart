@@ -8,25 +8,71 @@ import 'package:loqmtk_food_delivery_app/features/product/widgets/spicy_slider.d
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductDetailsView extends StatefulWidget {
-  const ProductDetailsView({super.key});
+  final String productImage;
+  const ProductDetailsView({super.key, required this.productImage});
 
   @override
   State<ProductDetailsView> createState() => _ProductDetailsViewState();
 }
 
 class _ProductDetailsViewState extends State<ProductDetailsView> {
+  // ---- fetching toppings and side options data ----
   final ProductRepository productRepository = ProductRepository();
+
+  bool isToppingsLoading = true;
+  bool isSideOptionsLoading = true;
+
   final toppings = <ProductModel>[];
-  // fetch toppings list from product repository and pass it to toppings variable
+  final sideOptions = <ProductModel>[];
+
   Future<void> _fetchToppings() async {
-    toppings.addAll(await productRepository.getToppings() ?? []);
+    try {
+      isToppingsLoading = true;
+      List<ProductModel>? fetchedToppings = await productRepository
+          .getToppings();
+
+      if (mounted) {
+        setState(() {
+          if (fetchedToppings != null) {
+            toppings.addAll(fetchedToppings);
+          }
+          isToppingsLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isToppingsLoading = false;
+          toppings.clear();
+        });
+      }
+    }
   }
 
-  // fetch side options list from product repository and pass it to sideOptions variable
-  final sideOptions = <ProductModel>[];
   Future<void> _fetchSideOptions() async {
-    sideOptions.addAll(await productRepository.getSideOptions() ?? []);
+    try {
+      isSideOptionsLoading = true;
+      List<ProductModel>? fetchedSideOptions = await productRepository
+          .getSideOptions();
+
+      if (mounted) {
+        setState(() {
+          if (fetchedSideOptions != null) {
+            sideOptions.addAll(fetchedSideOptions);
+          }
+          isSideOptionsLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          sideOptions.clear();
+          isSideOptionsLoading = false;
+        });
+      }
+    }
   }
+  // ---- end of fetching toppings and side options data ----
 
   @override
   void initState() {
@@ -45,7 +91,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
   @override
   Widget build(BuildContext context) {
     return Skeletonizer(
-      enabled: toppings.isEmpty && sideOptions.isEmpty,
+      enabled: isToppingsLoading || isSideOptionsLoading,
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -64,6 +110,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
               children: [
                 SpicySlider(
                   initialValue: spicyLevel,
+                  productImage: widget.productImage,
                   onChanged: _updateSpicyLevel,
                 ),
                 //  ------------------ Toppings Section ------------------
@@ -72,13 +119,14 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                   productModel: toppings,
                   onAdd: () {},
                 ),
+                Gap(20),
                 //  ------------------ Side options Section ------------------
                 CustomSection(
                   sectionTitle: 'Side options',
                   productModel: sideOptions,
                   onAdd: () {},
                 ),
-                Gap(30),
+                Gap(80),
                 //  ------------------ Add to Cart Section ------------------
                 PriceActionSection(
                   price: '170.5',
