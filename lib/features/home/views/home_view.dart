@@ -38,9 +38,11 @@ class _HomeViewState extends State<HomeView> {
         _popularItems = items;
       });
     } catch (e) {
-      setState(() {
-        _popularItems = [];
-      });
+      if (mounted) {
+        setState(() {
+          _popularItems = [];
+        });
+      }
     }
   }
 
