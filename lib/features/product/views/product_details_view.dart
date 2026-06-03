@@ -74,6 +74,13 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
   }
   // ---- end of fetching toppings and side options data ----
 
+  // ---- Add to cart handing ----
+  final bool isToppingSelected = false;
+  final bool isOptionSelected = false;
+
+  List<int> selectedToppings = [];
+  List<int> selectedOptions = [];
+
   @override
   void initState() {
     super.initState();
