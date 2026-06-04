@@ -83,7 +83,10 @@ class _HomeViewState extends State<HomeView> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return ProductDetailsView(productImage: item.image);
+                          return ProductDetailsView(
+                            productImage: item.image,
+                            productId: item.id,
+                          );
                         },
                       ),
                     );
