@@ -4,6 +4,7 @@ class CartModel {
   final double spicy;
   final List<int> toppings;
   final List<int> sideOptions;
+
   CartModel({
     required this.productId,
     required this.quantity,
@@ -12,24 +13,28 @@ class CartModel {
     required this.sideOptions,
   });
 
-  // model to json
+  // Convert model to JSON payload for sending data
   Map<String, dynamic> toJson() {
     return {
       'product_id': productId,
       'quantity': quantity,
       'spicy': spicy,
-      'toppings': toppings,
-      'side_options': sideOptions,
+      // Safely casting to List<dynamic> to avoid runtime serialization errors
+      'toppings': List<dynamic>.from(toppings.map((x) => x)),
+      'side_options': List<dynamic>.from(sideOptions.map((x) => x)),
     };
   }
 }
 
 class AddToCartRequest {
   List<CartModel> cartItems;
+
   AddToCartRequest({required this.cartItems});
 
-  // model to json , map the list of cart items to list of json
+  // Convert request wrapper to JSON payload for sending data
   Map<String, dynamic> toJson() {
-    return {'items': cartItems.map((item) => item.toJson()).toList()};
+    return {
+      'items': List<dynamic>.from(cartItems.map((item) => item.toJson())),
+    };
   }
 }
