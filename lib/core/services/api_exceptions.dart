@@ -2,6 +2,26 @@ import 'package:dio/dio.dart';
 import 'package:loqmtk_food_delivery_app/core/services/api_error.dart';
 
 class ApiException {
+  static String _extractErrorMessage(DioException error) {
+    final statusCode = error.response?.statusCode;
+    final data = error.response?.data;
+
+    if (data is Map<String, dynamic>) {
+      final message = data['message'];
+      if (message != null) return message.toString();
+    }
+
+    if (statusCode == 401) {
+      return 'Unauthorized: Please log in to continue';
+    }
+
+    if (statusCode == 403) {
+      return 'Forbidden: You do not have permission to access this resource';
+    }
+
+    return 'Bad response';
+  }
+
   static ApiError handleEror(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -20,7 +40,7 @@ class ApiException {
         return ApiError(message: 'Bad certificate');
       case DioExceptionType.badResponse:
         return ApiError(
-          message: error.response?.data['message'] ?? 'Bad response',
+          message: _extractErrorMessage(error),
           statusCode: error.response?.statusCode,
         );
     }
