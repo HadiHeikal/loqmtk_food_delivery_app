@@ -11,11 +11,15 @@ class CustomSection extends StatelessWidget {
     required this.sectionTitle,
     required this.productModel,
     required this.onAdd,
+    required this.selectedIndices,
   });
 
   final String sectionTitle;
   final List<ProductModel>? productModel;
-  final Function() onAdd;
+  final List<int> selectedIndices; // Holds currently selected indices
+  final Function(int index)
+  onAdd; // Modified signature to provide the relevant index upstream
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -35,11 +39,14 @@ class CustomSection extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: List.generate(productModel?.length ?? 4, (index) {
+              final isSelected = selectedIndices.contains(index);
               return Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: CustomItem(
                   productModel: productModel?[index],
                   onAdd: onAdd,
+                  isSelected: isSelected,
+                  index: index,
                 ),
               );
             }),

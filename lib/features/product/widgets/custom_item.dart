@@ -8,9 +8,13 @@ class CustomItem extends StatelessWidget {
     super.key,
     required this.productModel,
     required this.onAdd,
+    required this.isSelected,
+    required this.index,
   });
   final ProductModel? productModel;
-  final Function() onAdd;
+  final Function(int) onAdd;
+  final bool isSelected; // Controls the color tints and action icon switches
+  final int index; // Represents the structural loop order reference
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +25,16 @@ class CustomItem extends StatelessWidget {
           height: 90,
           width: 130,
           decoration: BoxDecoration(
-            color: AppColors.toppingsSectionBgColor,
+            color: isSelected
+                ? Colors.green.withValues(alpha: 0.12)
+                : AppColors.toppingsSectionBgColor,
             borderRadius: BorderRadius.circular(20),
+            border: isSelected
+                ? Border.all(
+                    color: Colors.green.withValues(alpha: 0.12),
+                    width: 2,
+                  )
+                : null,
           ),
         ),
         Positioned(
@@ -56,19 +68,25 @@ class CustomItem extends StatelessWidget {
                 text: productModel?.name ?? '',
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.black : AppColors.whiteColor,
               ),
               Spacer(),
               Container(
                 height: 25,
                 width: 25,
                 decoration: BoxDecoration(
-                  color: AppColors.toppingsButtonBgColor,
+                  color: isSelected
+                      ? Colors.green
+                      : AppColors.toppingsButtonBgColor,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: onAdd,
-                  icon: Icon(Icons.add, color: AppColors.whiteColor, size: 25),
+                  onPressed: () => onAdd(index),
+                  icon: isSelected
+                      ? Icon(Icons.check, size: 25)
+                      : Icon(Icons.add, size: 25),
+                  color: AppColors.whiteColor,
                 ),
               ),
             ],
