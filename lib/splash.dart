@@ -17,16 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final user = await authRepository.autoLogin();
       if (user != null && mounted) {
-        // navigate to home screen
         Navigator.pushReplacementNamed(context, '/appRoutes');
-      } else if (authRepository.isGuest && mounted) {
-        // navigate to home screen as guest
-        Navigator.pushReplacementNamed(context, '/appRoutes');
-      } else {
-        // navigate to login screen if not logged in
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/login');
-        }
+      } else if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
       // navigate to login screen on error

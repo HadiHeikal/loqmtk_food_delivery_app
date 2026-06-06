@@ -6,7 +6,10 @@ class DioClient {
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: baseUrl,
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
     ),
   );
 
