@@ -125,7 +125,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
     _fetchSideOptions();
   }
 
-  double spicyLevel = 0.0;
+  double spicyLevel = 0.1;
   void _updateSpicyLevel(double value) {
     setState(() {
       spicyLevel = value;
@@ -178,7 +178,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                   price: '170.5',
                   onTap: () async {
                     final token = await PrefHelper.getToken();
-                    if (token == null || token.isEmpty || token == 'Guest') {
+                    if (token == null || token.isEmpty) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

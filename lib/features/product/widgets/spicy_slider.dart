@@ -62,7 +62,7 @@ class _SpicySliderState extends State<SpicySlider> {
             Slider(
               thumbColor: AppColors.primaryColor,
               activeColor: AppColors.primaryColor,
-              min: 0,
+              min: 0.1,
               max: 1,
               value: widget.initialValue,
               onChanged: widget.onChanged,

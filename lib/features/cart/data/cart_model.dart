@@ -18,7 +18,7 @@ class CartModel {
     return {
       'product_id': productId,
       'quantity': quantity,
-      'spicy': spicy,
+      'spicy': spicy < 0.1 ? 0.1 : spicy,
       // Safely casting to List<dynamic> to avoid runtime serialization errors
       'toppings': List<dynamic>.from(toppings.map((x) => x)),
       'side_options': List<dynamic>.from(sideOptions.map((x) => x)),
