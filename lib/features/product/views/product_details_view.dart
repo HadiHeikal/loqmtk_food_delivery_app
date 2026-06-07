@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/services/api_error.dart';
 import 'package:loqmtk_food_delivery_app/core/utils/pref_helper.dart';
-import 'package:loqmtk_food_delivery_app/features/cart/data/cart_model.dart';
-import 'package:loqmtk_food_delivery_app/features/cart/data/cart_repo.dart';
+import 'package:loqmtk_food_delivery_app/features/cart/data/add_to_cart_models/add_to_cart_model.dart';
+import 'package:loqmtk_food_delivery_app/features/cart/data/add_to_cart_models/cart_model.dart';
+import 'package:loqmtk_food_delivery_app/features/cart/data/cart_repo/cart_repo.dart';
 import 'package:loqmtk_food_delivery_app/features/product/data/product_model.dart';
 import 'package:loqmtk_food_delivery_app/features/product/data/product_repo.dart';
 import 'package:loqmtk_food_delivery_app/shared/price_action_section.dart';
@@ -205,7 +206,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                       );
 
                       await CartRepo().addToCart(
-                        AddToCartRequest(cartItems: [cartItem]),
+                        AddToCartModel(cartItems: [cartItem]),
                       );
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(

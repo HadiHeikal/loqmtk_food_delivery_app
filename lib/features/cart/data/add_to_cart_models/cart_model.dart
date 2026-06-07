@@ -25,16 +25,3 @@ class CartModel {
     };
   }
 }
-
-class AddToCartRequest {
-  List<CartModel> cartItems;
-
-  AddToCartRequest({required this.cartItems});
-
-  // Convert request wrapper to JSON payload for sending data
-  Map<String, dynamic> toJson() {
-    return {
-      'items': List<dynamic>.from(cartItems.map((item) => item.toJson())),
-    };
-  }
-}
