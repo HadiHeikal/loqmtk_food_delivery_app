@@ -19,6 +19,18 @@ class ApiException {
       return 'Forbidden: You do not have permission to access this resource';
     }
 
+    if (statusCode == 404) {
+      return 'Not Found: The requested resource could not be found';
+    }
+
+    if (statusCode == 500) {
+      return 'Internal Server Error: Something went wrong on the server';
+    }
+
+    if (statusCode == 503) {
+      return 'Service Unavailable: The server is currently unavailable';
+    }
+
     return 'Bad response';
   }
 

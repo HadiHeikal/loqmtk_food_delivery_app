@@ -6,6 +6,7 @@ class DioClient {
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: baseUrl,
+      // Set default headers for all requests
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
