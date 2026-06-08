@@ -36,35 +36,57 @@ class _ProfileViewState extends State<ProfileView> {
   final AuthRepository _authRepository = AuthRepository();
   UserModel? userModel;
   bool isGuest = false;
-  // auto login method to check if user is already logged in and get profile data
-  Future<void> autoLogin() async {
-    final user = await _authRepository.autoLogin();
-    setState(() => isGuest = _authRepository.isGuest);
-    if (user != null) setState(() => userModel = user);
+  bool _isInitializing = true;
+
+  void _applyUserToForm(UserModel user) {
+    userModel = user;
+    nameController.text = user.name.toString();
+    emailController.text = user.email.toString();
+    addressController.text =
+        user.address != null ? user.address.toString() : '';
+    visaController.text = user.visa != null ? user.visa.toString() : '';
+  }
+
+  Future<void> _initializeProfile() async {
+    try {
+      final user = await _authRepository.autoLogin();
+      if (!mounted) return;
+
+      setState(() {
+        isGuest = _authRepository.isGuest;
+        if (user != null) {
+          _applyUserToForm(user);
+        }
+        _isInitializing = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isGuest = AuthRepository.isGuestSession;
+        _isInitializing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load profile: $e')),
+      );
+    }
   }
 
   /// Fetches the user profile data from the secure API repository architecture
   Future<void> _loadUserProfile() async {
+    if (isGuest) return;
+
     try {
       final user = await _authRepository.getProfile();
-      if (user != null) {
-        setState(() {
-          userModel = user;
-          // Synchronize text controllers with updated backend model datasets
-          nameController.text = user.name.toString();
-          emailController.text = user.email.toString();
-          addressController.text = user.address != null
-              ? user.address.toString()
-              : '';
-          visaController.text = user.visa != null ? user.visa.toString() : '';
-        });
-      }
+      if (!mounted || user == null) return;
+
+      setState(() {
+        _applyUserToForm(user);
+      });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load profile: $e')),
+      );
     }
   }
 
@@ -74,7 +96,7 @@ class _ProfileViewState extends State<ProfileView> {
     final LostDataResponse response = await picker.retrieveLostData();
     if (response.isEmpty) return;
 
-    if (response.file != null) {
+    if (response.file != null && mounted) {
       setState(() {
         selectedImagePath = response.file!.path;
       });
@@ -89,7 +111,7 @@ class _ProfileViewState extends State<ProfileView> {
         source: ImageSource.gallery,
         imageQuality: 80, // اضغط الصورة لسرعة الرفع وتقليل استهلاك الباقة
       );
-      if (pickedImage != null) {
+      if (pickedImage != null && mounted) {
         setState(() {
           selectedImagePath = pickedImage.path;
         });
@@ -126,7 +148,7 @@ class _ProfileViewState extends State<ProfileView> {
         visa: visaController.text.trim(),
       );
 
-      if (user != null) {
+      if (user != null && mounted) {
         setState(() {
           userModel = user;
           isEditing = false;
@@ -155,9 +177,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
-    autoLogin();
     super.initState();
-    _loadUserProfile();
+    _initializeProfile();
     _checkLostData();
   }
 
@@ -192,11 +213,53 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Scaffold(
+        backgroundColor: AppColors.primaryColor,
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.whiteColor),
+        ),
+      );
+    }
+
     if (isGuest) {
       return Scaffold(
         backgroundColor: AppColors.primaryColor,
         body: SafeArea(
-          child: RefreshIndicator(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CustomText(
+                    text: 'Guest users cannot access profile features.',
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    child: const CustomText(
+                      text: 'Log in',
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.primaryColor,
+      body: SafeArea(
+        child: RefreshIndicator(
             onRefresh: _loadUserProfile,
             color: AppColors.primaryColor,
             backgroundColor: AppColors.whiteColor,
@@ -541,18 +604,6 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
         ),
-      );
-    } else {
-      return Scaffold(
-        backgroundColor: AppColors.primaryColor,
-        body: const Center(
-          child: CustomText(
-            text: 'Guest users cannot access profile features.',
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-      );
-    }
+    );
   }
 }

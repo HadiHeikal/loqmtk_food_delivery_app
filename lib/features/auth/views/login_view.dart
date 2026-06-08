@@ -46,13 +46,47 @@ class _LoginViewState extends State<LoginView> {
       }
 
       if (mounted) {
-        // Show error message in a SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: CustomText(
                 text: errorMessage ?? 'An unexpected error occurred.',
+                color: AppColors.whiteColor,
+              ),
+            ),
+            backgroundColor: AppColors.redColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGuestLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authRepository.continueAsGuest();
+
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/appRoutes');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: CustomText(
+                text: 'Failed to continue as guest. Please try again.',
                 color: AppColors.whiteColor,
               ),
             ),
@@ -134,6 +168,42 @@ class _LoginViewState extends State<LoginView> {
                           onPressed: _handleLogin,
                           text: 'Login',
                         ),
+                  const Gap(24),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Divider(color: AppColors.secondaryColor),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: CustomText(
+                          text: 'OR',
+                          color: AppColors.secondaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Expanded(
+                        child: Divider(color: AppColors.secondaryColor),
+                      ),
+                    ],
+                  ),
+                  const Gap(24),
+                  OutlinedButton(
+                    onPressed: _isLoading ? null : _handleGuestLogin,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      side: const BorderSide(color: AppColors.whiteColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const CustomText(
+                      text: 'Continue as Guest',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.whiteColor,
+                    ),
+                  ),
                   const Gap(20),
                   // Navigate to Signup
                   Row(

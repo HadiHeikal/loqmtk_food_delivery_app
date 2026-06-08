@@ -7,10 +7,12 @@ import 'package:loqmtk_food_delivery_app/core/utils/pref_helper.dart';
 import 'package:loqmtk_food_delivery_app/features/auth/data/auth_model.dart';
 
 class AuthRepository {
+  static bool _sessionGuest = false;
   ApiService apiService = ApiService();
   bool isGuest = false;
   UserModel? _currentUser;
 
+  static bool get isGuestSession => _sessionGuest;
   // login
   Future<UserModel?> login(String email, String password) async {
     try {
@@ -22,6 +24,7 @@ class AuthRepository {
       if (user.token != null) {
         await PrefHelper.saveToken(user.token!);
       }
+      _sessionGuest = false;
       isGuest = false;
       _currentUser = user;
       return user;
@@ -47,6 +50,7 @@ class AuthRepository {
       if (user.token != null) {
         await PrefHelper.saveToken(user.token!);
       }
+      _sessionGuest = false;
       isGuest = false;
       _currentUser = user;
       return user;
@@ -61,8 +65,7 @@ class AuthRepository {
   Future<UserModel?> getProfile() async {
     try {
       final token = await PrefHelper.getToken();
-      // If no token is found, treat the user as a guest and return null
-      if (token != null || token == 'Guest') return null;
+      if (token == null || token.isEmpty) return null;
 
       // If a token is found, make a GET request to the '/profile' endpoint
       final response = await apiService.get('/profile');
@@ -137,15 +140,15 @@ class AuthRepository {
     }
   }
 
-  // Continue as a guest user
+  // Continue as a guest user (session-only; not persisted across app restarts)
   Future<void> continueAsGuest() async {
-    try {
-      await PrefHelper.saveToken('Guest');
-      isGuest = true;
-      _currentUser =
-          null; // Clear any existing user data when switching to guest mode
-    } catch (e) {
-      rethrow;
+    _sessionGuest = true;
+    isGuest = true;
+    _currentUser = null;
+
+    final token = await PrefHelper.getToken();
+    if (token == 'Guest') {
+      await PrefHelper.removeToken();
     }
   }
 
@@ -153,19 +156,24 @@ class AuthRepository {
   Future<UserModel?> autoLogin() async {
     try {
       final token = await PrefHelper.getToken();
-      // If a valid token exists and is not 'Guest', attempt to fetch the user's profile
-      if (token != null && token != 'Guest') {
+
+      // Remove legacy guest token so the login page is shown on next launch
+      if (token == 'Guest') {
+        await PrefHelper.removeToken();
+      }
+
+      if (token != null && token.isNotEmpty && token != 'Guest') {
         final response = await apiService.get('/profile');
         final user = UserModel.fromJson(response['data']);
         _currentUser = user;
+        _sessionGuest = false;
         isGuest = false;
         return user;
-      } else {
-        // If the token is 'Guest' or null, treat the user as a guest
-        isGuest = true;
-        _currentUser = null;
-        return null;
       }
+
+      isGuest = _sessionGuest;
+      _currentUser = null;
+      return null;
     } on DioException catch (e) {
       PrefHelper.removeToken(); // Clear any invalid token from storage
       throw ApiException.handleEror(e);
@@ -179,8 +187,8 @@ class AuthRepository {
     try {
       await apiService.post('/logout');
       await PrefHelper.removeToken();
-      // Reset the guest status and clear the current user data upon logout
-      isGuest = true;
+      _sessionGuest = false;
+      isGuest = false;
       _currentUser = null;
     } on DioException catch (e) {
       throw ApiException.handleEror(e);
