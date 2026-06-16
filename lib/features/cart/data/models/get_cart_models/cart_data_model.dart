@@ -1,4 +1,4 @@
-import 'package:loqmtk_food_delivery_app/features/cart/data/get_cart_models/cart_item_model.dart';
+import 'package:loqmtk_food_delivery_app/features/cart/data/models/get_cart_models/cart_item_model.dart';
 
 class CartDataModel {
   final int id;

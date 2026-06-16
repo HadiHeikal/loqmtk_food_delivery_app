@@ -1,4 +1,4 @@
-import 'package:loqmtk_food_delivery_app/features/cart/data/add_to_cart_models/cart_model.dart';
+import 'package:loqmtk_food_delivery_app/features/cart/data/models/add_to_cart_models/cart_model.dart';
 
 class AddToCartModel {
   List<CartModel> cartItems;
