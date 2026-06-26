@@ -86,6 +86,7 @@ class _HomeViewState extends State<HomeView> {
                           return ProductDetailsView(
                             productImage: item.image,
                             productId: item.id,
+                            productPrice: item.price,
                           );
                         },
                       ),
