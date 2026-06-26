@@ -24,19 +24,25 @@ class CartItemModel {
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
-    itemId: json["item_id"],
-    productId: json["product_id"],
-    name: json["name"],
-    image: json["image"],
-    quantity: json["quantity"],
-    price: json["price"],
+    itemId: json["item_id"] ?? 0,
+    productId: json["product_id"] ?? 0,
+    name: json["name"]?.toString() ?? '',
+    image: json["image"]?.toString() ?? '',
+    quantity: json["quantity"] ?? 1,
+    price: json["price"]?.toString() ?? '0',
     spicy: json["spicy"],
-    toppings: List<OptionsModel>.from(
-      json["toppings"].map((x) => OptionsModel.fromJson(x)),
-    ),
-    sideOptions: List<OptionsModel>.from(
-      json["side_options"].map((x) => OptionsModel.fromJson(x)),
-    ),
+    toppings: json["toppings"] is List
+        ? (json["toppings"] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((x) => OptionsModel.fromJson(x))
+              .toList()
+        : [],
+    sideOptions: json["side_options"] is List
+        ? (json["side_options"] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((x) => OptionsModel.fromJson(x))
+              .toList()
+        : [],
   );
 
   Map<String, dynamic> toJson() => {

@@ -11,14 +11,24 @@ class CartDataModel {
     required this.items,
   });
 
+  factory CartDataModel.empty() =>
+      CartDataModel(id: 0, totalPrice: '0', items: []);
+
   // Factory constructor to create an instance from JSON data
-  factory CartDataModel.fromJson(Map<String, dynamic> json) => CartDataModel(
-    id: json["id"],
-    totalPrice: json["total_price"],
-    items: List<CartItemModel>.from(
-      json["items"].map((x) => CartItemModel.fromJson(x)),
-    ),
-  );
+  factory CartDataModel.fromJson(Map<String, dynamic> json) {
+    final itemsJson = json["items"];
+
+    return CartDataModel(
+      id: json["id"] ?? 0,
+      totalPrice: json["total_price"]?.toString() ?? '0',
+      items: itemsJson is List
+          ? itemsJson
+                .whereType<Map<String, dynamic>>()
+                .map((x) => CartItemModel.fromJson(x))
+                .toList()
+          : [],
+    );
+  }
 
   // Method to convert the instance to a JSON map
   Map<String, dynamic> toJson() => {
