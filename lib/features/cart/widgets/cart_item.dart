@@ -25,9 +25,10 @@ class CartItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Column(
@@ -53,7 +54,7 @@ class CartItem extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppColors.blackColor,
-                      fontSize: 16,
+                      fontSize: 14,
                     ),
                   ),
                   Text(
@@ -70,7 +71,6 @@ class CartItem extends StatelessWidget {
                 ],
               ),
             ),
-            const Gap(16),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
