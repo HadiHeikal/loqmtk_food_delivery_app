@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
-import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 
 class CartItem extends StatelessWidget {
   const CartItem({
@@ -26,95 +25,126 @@ class CartItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // item image
-            Column(
-              children: [
-                Image.asset(itemImage, width: 100, height: 100),
-                Gap(5),
-                CustomText(
-                  text: itemName,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blackColor,
-                  fontSize: 20,
-                ),
-                CustomText(
-                  text: itemDescription,
-                  color: AppColors.blackColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-              ],
-            ),
-            Gap(50),
-            // item name and description
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // plus and minus buttons
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: onPlus,
-                      child: Container(
-                        width: 35,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: Icon(Icons.add, color: AppColors.whiteColor),
-                      ),
+            Expanded(
+              child: Column(
+                children: [
+                  Image.network(
+                    itemImage,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 70,
+                      height: 70,
+                      color: AppColors.secondaryColor,
+                      child: const Icon(Icons.fastfood),
                     ),
-                    Gap(20),
-                    CustomText(
-                      text: itemQuantity.toString(),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 24,
+                  ),
+                  const Gap(5),
+                  Text(
+                    itemName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                       color: AppColors.blackColor,
+                      fontSize: 16,
                     ),
-                    Gap(20),
-                    GestureDetector(
-                      onTap: onMinus,
-                      child: Container(
-                        width: 35,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(9),
+                  ),
+                  Text(
+                    itemDescription,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.blackColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Gap(16),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: onPlus,
+                        child: Container(
+                          width: 35,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Icon(Icons.add, color: AppColors.whiteColor),
                         ),
-                        child: Icon(Icons.remove, color: AppColors.whiteColor),
                       ),
-                    ),
-                  ],
-                ),
-                Gap(20),
-                // remove item from cart button
-                GestureDetector(
-                  onTap: onRemoveItem,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor,
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 8,
+                      const Gap(12),
+                      Text(
+                        itemQuantity.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 22,
+                          color: AppColors.blackColor,
+                        ),
                       ),
-                      child: CustomText(
-                        text: 'Remove item',
-                        color: AppColors.whiteColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
+                      const Gap(12),
+                      GestureDetector(
+                        onTap: onMinus,
+                        child: Container(
+                          width: 35,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Icon(
+                            Icons.remove,
+                            color: AppColors.whiteColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Gap(20),
+                  GestureDetector(
+                    onTap: onRemoveItem,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'Remove item',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.whiteColor,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
