@@ -11,8 +11,10 @@ class PaymentMethodItem extends StatelessWidget {
     required this.groupValue,
     required this.onChanged,
     this.selectedColor,
+    this.cardNumber,
   });
   final String title;
+  final String? cardNumber;
   final String image;
   final String value;
   final String groupValue;
@@ -37,6 +39,17 @@ class PaymentMethodItem extends StatelessWidget {
         color: AppColors.whiteColor,
         fontWeight: FontWeight.bold,
       ),
+      subtitle: cardNumber != null
+          ? CustomText(
+              text: cardNumber!,
+              fontSize: 16,
+              color: AppColors.whiteColor,
+            )
+          : CustomText(
+              text: 'safe payment method',
+              fontSize: 16,
+              color: AppColors.whiteColor,
+            ),
       trailing: RadioGroup(
         groupValue: groupValue,
         onChanged: onChanged,

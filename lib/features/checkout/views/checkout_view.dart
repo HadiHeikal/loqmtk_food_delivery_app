@@ -114,6 +114,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         ? buildPaymentMethodShimmer()
                         : visaCard != null && visaCard!.isNotEmpty
                         ? PaymentMethodItem(
+                            cardNumber: visaCard,
                             title: 'Credit card',
                             image: 'assets/images/payment/visa.png',
                             value: 'credit card',
