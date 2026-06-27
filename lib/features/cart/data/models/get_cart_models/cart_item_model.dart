@@ -23,6 +23,18 @@ class CartItemModel {
     required this.sideOptions,
   });
 
+  CartItemModel copyWith({int? quantity}) => CartItemModel(
+    itemId: itemId,
+    productId: productId,
+    name: name,
+    image: image,
+    quantity: quantity ?? this.quantity,
+    price: price,
+    spicy: spicy,
+    toppings: toppings,
+    sideOptions: sideOptions,
+  );
+
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
     itemId: json["item_id"] ?? 0,
     productId: json["product_id"] ?? 0,
