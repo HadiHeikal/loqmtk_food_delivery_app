@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:gap/gap.dart';
 import 'package:loqmtk_food_delivery_app/core/constants/app_colors.dart';
+import 'package:loqmtk_food_delivery_app/features/auth/data/auth_model.dart';
+import 'package:loqmtk_food_delivery_app/features/auth/data/auth_repo.dart';
 import 'package:loqmtk_food_delivery_app/features/checkout/widgets/order_summary.dart';
 import 'package:loqmtk_food_delivery_app/features/checkout/widgets/payment_method_item.dart';
 import 'package:loqmtk_food_delivery_app/features/checkout/widgets/save_card.dart';
@@ -18,6 +21,43 @@ class CheckoutView extends StatefulWidget {
 class _CheckoutViewState extends State<CheckoutView> {
   String paymentMethod = 'cash';
   bool saveCard = false;
+
+  String? visaCard;
+  // get user profile from auth repository --------------------------
+  final AuthRepository _authRepository = AuthRepository();
+  UserModel? userProfile;
+
+  // fetch user profile
+  Future<void> fetchUserProfile() async {
+    try {
+      // debugPrint("Fetching user profile...");
+      final profileData = await _authRepository.getProfile();
+      // debugPrint("User profile fetched successfully: $profileData");
+      if (!mounted) return;
+
+      setState(() {
+        userProfile = profileData;
+        visaCard = profileData?.visa ?? "4321 ******* 1234";
+        // debugPrint("Visa Data from API: '${userProfile?.visa}'");
+      });
+    } catch (e) {
+      // debugPrint("Error fetching user profile: $e");
+      if (!mounted) return;
+      // debugPrint("Failed to load profile: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+    }
+  }
+
+  // ---------------------------------------------------------------
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserProfile();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,18 +110,22 @@ class _CheckoutViewState extends State<CheckoutView> {
                     ),
                     Gap(10),
                     // credit card payment method
-                    PaymentMethodItem(
-                      title: 'Credit card',
-                      image: 'assets/images/payment/visa.png',
-                      value: 'credit card',
-                      groupValue: paymentMethod,
-                      onChanged: (value) {
-                        setState(() {
-                          paymentMethod = value!;
-                        });
-                      },
-                      selectedColor: AppColors.darkBlueColor,
-                    ),
+                    userProfile == null
+                        ? buildPaymentMethodShimmer()
+                        : visaCard != null && visaCard!.isNotEmpty
+                        ? PaymentMethodItem(
+                            title: 'Credit card',
+                            image: 'assets/images/payment/visa.png',
+                            value: 'credit card',
+                            groupValue: paymentMethod,
+                            onChanged: (value) {
+                              setState(() {
+                                paymentMethod = value!;
+                              });
+                            },
+                            selectedColor: AppColors.darkBlueColor,
+                          )
+                        : Container(),
                     Gap(10),
                     // save card checkbox
                     SaveCard(
@@ -124,4 +168,20 @@ class _CheckoutViewState extends State<CheckoutView> {
       ),
     );
   }
+}
+
+// Widget to display shimmer effect for payment method options
+Widget buildPaymentMethodShimmer() {
+  return Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      height: 70,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  );
 }
