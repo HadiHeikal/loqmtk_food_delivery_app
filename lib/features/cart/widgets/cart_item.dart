@@ -37,7 +37,7 @@ class CartItem extends StatelessWidget {
                     itemImage,
                     width: 70,
                     height: 70,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                     errorBuilder: (context, error, stackTrace) => Container(
                       width: 70,
                       height: 70,
@@ -48,7 +48,7 @@ class CartItem extends StatelessWidget {
                   const Gap(5),
                   Text(
                     itemName,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
