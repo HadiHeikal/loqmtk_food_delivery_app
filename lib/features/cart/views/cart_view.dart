@@ -21,12 +21,14 @@ class CartView extends StatefulWidget {
 }
 
 class _CartViewState extends State<CartView> {
+  // State variables to manage cart items and their quantities
   Map<int, int> _quantityByProductId = {};
   final Set<int> _dismissedProductIds = {};
   final Set<int> _removingProductIds = {};
   bool _isUpdatingCart = false;
 
   // Functions to handle quantity changes ------------
+  // Increment item quantity
   Future<void> _incrementQuantity(int index) async {
     final item = _itemAt(index);
     if (item == null) return;
@@ -34,6 +36,7 @@ class _CartViewState extends State<CartView> {
     await _updateCartItemQuantity(item, _quantityAt(index, item) + 1);
   }
 
+  // Decrement item quantity
   Future<void> _decrementQuantity(int index) async {
     final item = _itemAt(index);
     if (item == null) return;
@@ -43,7 +46,10 @@ class _CartViewState extends State<CartView> {
 
     await _updateCartItemQuantity(item, newQuantity);
   }
+  // -------------------------------------------------
 
+  // Functions to handle item removal ------------
+  // Remove item from cart
   Future<void> _removeItem(int index) async {
     final item = _itemAt(index);
     if (item == null || _isUpdatingCart) return;
@@ -51,6 +57,7 @@ class _CartViewState extends State<CartView> {
     await _removeCartItem(item);
   }
 
+  // Remove cart item with optional animation
   Future<void> _removeCartItem(
     CartItemModel item, {
     bool animateBeforeRemove = true,
@@ -89,7 +96,9 @@ class _CartViewState extends State<CartView> {
       }
     }
   }
+  // -------------------------------------------------
 
+  // Helper functions --------------------------------
   CartItemModel? _itemAt(int index) {
     final items = _cartDisplayItems;
     if (index < 0 || index >= items.length) return null;
@@ -100,7 +109,9 @@ class _CartViewState extends State<CartView> {
   int _quantityAt(int index, CartItemModel item) {
     return _quantityByProductId[item.productId] ?? item.quantity;
   }
+  // -------------------------------------------------
 
+  // Update cart item quantity --------------------------------
   Future<void> _updateCartItemQuantity(
     CartItemModel item,
     int newQuantity,
@@ -146,7 +157,9 @@ class _CartViewState extends State<CartView> {
       _showSnackBar('Failed to update cart item');
     }
   }
+  // -------------------------------------------------
 
+  // Helper function to remove raw items for a specific product from the cart
   Future<void> _removeRawItemsForProduct(int productId) async {
     final matchingItems = (_cartItems?.data.items ?? [])
         .where((item) => item.productId == productId && item.itemId > 0)
@@ -156,7 +169,9 @@ class _CartViewState extends State<CartView> {
       await _cartRepo.removeFromCart(item.itemId);
     }
   }
+  // -------------------------------------------------
 
+  // Helper function to parse the spicy level from dynamic value
   double _parseSpicyLevel(dynamic value) {
     if (value is num) return value.toDouble();
 
@@ -308,7 +323,10 @@ class _CartViewState extends State<CartView> {
                     }
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CheckoutView()),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CheckoutView(totalPrice: _totalPrice.toString()),
+                      ),
                     );
                   },
                   buttonText: 'Check Out',

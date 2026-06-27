@@ -9,8 +9,8 @@ import 'package:loqmtk_food_delivery_app/shared/custom_text.dart';
 import 'package:loqmtk_food_delivery_app/shared/price_action_section.dart';
 
 class CheckoutView extends StatefulWidget {
-  const CheckoutView({super.key});
-
+  const CheckoutView({super.key, required this.totalPrice});
+  final String totalPrice;
   @override
   State<CheckoutView> createState() => _CheckoutViewState();
 }
@@ -45,7 +45,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                   children: [
                     Gap(10),
                     // order summary section
-                    OrderSummary(),
+                    OrderSummary(totalPrice: widget.totalPrice),
                     Gap(40),
                     // select payment method section
                     CustomText(
@@ -99,7 +99,7 @@ class _CheckoutViewState extends State<CheckoutView> {
 
             // confirm order button
             PriceActionSection(
-              price: '750',
+              price: widget.totalPrice,
               onTap: () {
                 showDialog(
                   context: context,
