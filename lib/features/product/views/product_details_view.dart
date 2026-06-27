@@ -15,10 +15,12 @@ import 'package:skeletonizer/skeletonizer.dart';
 class ProductDetailsView extends StatefulWidget {
   final String productImage;
   final int productId;
+  final String productPrice;
   const ProductDetailsView({
     super.key,
     required this.productImage,
     required this.productId,
+    required this.productPrice,
   });
 
   @override
@@ -28,6 +30,7 @@ class ProductDetailsView extends StatefulWidget {
 class _ProductDetailsViewState extends State<ProductDetailsView> {
   // ---- fetching toppings and side options data ----
   final ProductRepository productRepository = ProductRepository();
+  final CartRepo _cartRepo = CartRepo();
 
   bool isToppingsLoading = true;
   bool isSideOptionsLoading = true;
@@ -133,6 +136,117 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
     });
   }
 
+  Future<void> _addToCart() async {
+    final token = await PrefHelper.getToken();
+    if (token == null || token.isEmpty || token == 'Guest') {
+      _showSnackBar('Please log in to add items to cart');
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final mappedToppings = selectedToppingsIndicies
+          .where((index) => index >= 0 && index < toppings.length)
+          .map((index) => toppings[index].id)
+          .toList();
+      final mappedSides = selectedOptionsIndicies
+          .where((index) => index >= 0 && index < sideOptions.length)
+          .map((index) => sideOptions[index].id)
+          .toList();
+
+      final cartResponse = await _cartRepo.getCartItems();
+      final cartItems = cartResponse?.data.items ?? [];
+      final existingItems = cartItems
+          .where((item) => item.productId == widget.productId)
+          .toList();
+      final existingItem = existingItems.isNotEmpty
+          ? existingItems.first
+          : null;
+
+      if (existingItem != null) {
+        for (final item in existingItems.where((item) => item.itemId > 0)) {
+          await _cartRepo.removeFromCart(item.itemId);
+        }
+
+        final currentQuantity = existingItems.fold<int>(
+          0,
+          (sum, item) => sum + item.quantity,
+        );
+        final newQuantity = currentQuantity + 1;
+
+        await _cartRepo.addToCart(
+          AddToCartModel(
+            cartItems: [
+              CartModel(
+                productId: existingItem.productId,
+                quantity: newQuantity,
+                toppings: existingItem.toppings
+                    .map((option) => option.id)
+                    .toList(),
+                sideOptions: existingItem.sideOptions
+                    .map((option) => option.id)
+                    .toList(),
+                spicy: _parseSpicyLevel(existingItem.spicy),
+              ),
+            ],
+          ),
+        );
+        await _cartRepo.saveCachedCartQuantity(
+          existingItem.productId,
+          newQuantity,
+        );
+      } else {
+        await _cartRepo.addToCart(
+          AddToCartModel(
+            cartItems: [
+              CartModel(
+                productId: widget.productId,
+                quantity: 1,
+                toppings: mappedToppings,
+                sideOptions: mappedSides,
+                spicy: spicyLevel,
+              ),
+            ],
+          ),
+        );
+        await _cartRepo.saveCachedCartQuantity(widget.productId, 1);
+      }
+
+      _showSnackBar(
+        existingItem != null
+            ? 'Item quantity updated successfully'
+            : 'Item added to cart successfully',
+      );
+    } on ApiError catch (e) {
+      _showSnackBar(e.message);
+    } catch (e) {
+      _showSnackBar('Failed to add item to cart: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  double _parseSpicyLevel(dynamic value) {
+    if (value is num) return value.toDouble();
+
+    return double.tryParse(value?.toString() ?? '') ?? 0.1;
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Skeletonizer(
@@ -176,58 +290,8 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                 Gap(80),
                 //  ------------------ Add to Cart Section ------------------
                 PriceActionSection(
-                  price: '170.5',
-                  onTap: () async {
-                    final token = await PrefHelper.getToken();
-                    if (token == null || token.isEmpty) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please log in to add items to cart'),
-                        ),
-                      );
-                      return;
-                    }
-
-                    try {
-                      final mappedToppings = selectedToppingsIndicies
-                          .map((index) => toppings[index].id)
-                          .toList();
-                      final mappedSides = selectedOptionsIndicies
-                          .map((index) => sideOptions[index].id)
-                          .toList();
-
-                      final cartItem = CartModel(
-                        productId: widget.productId,
-                        quantity: 1,
-                        toppings: mappedToppings,
-                        sideOptions: mappedSides,
-                        spicy: spicyLevel,
-                      );
-
-                      await CartRepo().addToCart(
-                        AddToCartModel(cartItems: [cartItem]),
-                      );
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Item added to cart successfully'),
-                        ),
-                      );
-                    } on ApiError catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(e.message)));
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to add item to cart: $e'),
-                        ),
-                      );
-                    }
-                  },
+                  price: widget.productPrice,
+                  onTap: isLoading ? () {} : _addToCart,
                   buttonText: isLoading ? 'Adding...' : 'Add to Cart',
                 ),
                 // ----------------------------------------------------------
