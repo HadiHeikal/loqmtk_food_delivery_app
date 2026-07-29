@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:loqmtk_food_delivery_app/core/services/api_error.dart';
 
 class ApiException {
+  // server error
   static String _extractErrorMessage(DioException error) {
     final statusCode = error.response?.statusCode;
     final data = error.response?.data;
@@ -34,7 +35,9 @@ class ApiException {
     return 'Bad response';
   }
 
-  static ApiError handleEror(DioException error) {
+  // Method to handle API errors and return an ApiError object
+  // network error
+  static ApiError handleError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
         return ApiError(message: 'Connection timeout');

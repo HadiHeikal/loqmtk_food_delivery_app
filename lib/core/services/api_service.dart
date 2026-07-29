@@ -12,7 +12,7 @@ class ApiService {
       final Response response = await _dioClient.dio.get(endPoint);
       return response.data;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     }
   }
 
@@ -22,7 +22,7 @@ class ApiService {
       final Response response = await _dioClient.dio.post(endPoint, data: data);
       return response.data;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     }
   }
 
@@ -32,7 +32,7 @@ class ApiService {
       final Response response = await _dioClient.dio.put(endPoint, data: data);
       return response.data;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     }
   }
 
@@ -50,7 +50,7 @@ class ApiService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     }
   }
 }
