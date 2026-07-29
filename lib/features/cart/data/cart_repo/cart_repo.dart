@@ -32,7 +32,7 @@ class CartRepo {
 
       rethrow;
     } on DioException catch (error) {
-      throw ApiException.handleEror(error);
+      throw ApiException.handleError(error);
     } catch (error) {
       throw ApiError(message: 'Failed to load cart items: $error');
     }

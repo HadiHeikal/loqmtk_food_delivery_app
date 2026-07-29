@@ -29,7 +29,7 @@ class AuthRepository {
       _currentUser = user;
       return user;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }
@@ -55,7 +55,7 @@ class AuthRepository {
       _currentUser = user;
       return user;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }
@@ -71,7 +71,7 @@ class AuthRepository {
       final response = await apiService.get('/profile');
       return UserModel.fromJson(response['data']);
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }
@@ -134,7 +134,7 @@ class AuthRepository {
 
       throw Exception('Unexpected response format: ${response.runtimeType}');
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }
@@ -176,7 +176,7 @@ class AuthRepository {
       return null;
     } on DioException catch (e) {
       PrefHelper.removeToken(); // Clear any invalid token from storage
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }
@@ -191,7 +191,7 @@ class AuthRepository {
       isGuest = false;
       _currentUser = null;
     } on DioException catch (e) {
-      throw ApiException.handleEror(e);
+      throw ApiException.handleError(e);
     } catch (e) {
       rethrow;
     }

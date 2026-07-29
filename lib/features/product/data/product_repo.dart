@@ -22,7 +22,7 @@ class ProductRepository {
           .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
           .toList();
     } on DioException catch (error) {
-      throw ApiException.handleEror(error);
+      throw ApiException.handleError(error);
     } catch (error) {
       throw Exception('Failed to load toppings: $error');
     }
@@ -46,7 +46,7 @@ class ProductRepository {
           .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
           .toList();
     } on DioException catch (error) {
-      throw ApiException.handleEror(error);
+      throw ApiException.handleError(error);
     } catch (error) {
       throw Exception('Failed to load side options: $error');
     }
